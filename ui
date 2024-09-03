@@ -23,6 +23,16 @@
       padding: 8px;
       margin-bottom: 10px;
     }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .checkbox-container input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
     button {
       padding: 10px 20px;
     }
@@ -38,10 +48,10 @@
       <label for="pod_url">Enter Pod URL</label>
       <input type="text" id="pod_url" name="pod_url" required>
 
-      <label>
+      <div class="checkbox-container">
         <input type="checkbox" id="upcoming" name="upcoming">
-        Upcoming
-      </label>
+        <label for="upcoming">Upcoming</label>
+      </div>
 
       <button type="submit">Fetch</button>
     </form>
