@@ -1,7 +1,6 @@
 const express = require('express');
 const http = require('http');
 const https = require('https');
-const url = require('url');
 const cors = require('cors');
 
 const app = express();
@@ -25,7 +24,18 @@ app.get('/fetch', (req, res) => {
     });
 
     externalRes.on('end', () => {
-      res.send(data);  // Send the accumulated data to the client
+      // Split data into lines
+      const lines = data.split('\n');
+      
+      // Prepare HTML content
+      let htmlContent = '<html><body><pre>';
+      lines.forEach((line) => {
+        htmlContent += `${line}<br>`;  // Append each line with a <br> for line breaks
+      });
+      htmlContent += '</pre></body></html>';
+      
+      // Send the entire HTML content
+      res.send(htmlContent);
     });
 
   }).on('error', (err) => {
