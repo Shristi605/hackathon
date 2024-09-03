@@ -1,9 +1,12 @@
+const express = require('express');
 const http = require('http');
 const https = require('https');
 const url = require('url');
-const express = require('express');
+const cors = require('cors');
 
 const app = express();
+
+app.use(cors());  // Enable CORS for all routes
 
 app.get('/fetch', (req, res) => {
   const fetchUrl = req.query.url;
