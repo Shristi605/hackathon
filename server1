@@ -1,48 +1,46 @@
-const express = require('express');
-const https = require('https');
-const http = require('http');
-const url = require('url');
-const path = require('path');
+import React, { Component } from 'react';
 
-const app = express();
-const port = process.env.PORT || 3001;
-
-// Serve static files from the React app (build directory)
-app.use(express.static(path.join(__dirname, 'build')));
-
-// API route to fetch data from a URL
-app.get('/fetch', (req, res) => {
-  const queryObject = url.parse(req.url, true).query;
-  const fetchUrl = queryObject.url;
-
-  if (!fetchUrl) {
-    res.status(400).send('URL query parameter is required');
-    return;
+class FetchData extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: null,
+      error: null,
+    };
   }
 
-  const client = fetchUrl.startsWith('https') ? https : http;
-  
-  client.get(fetchUrl, (externalRes) => {
-    let data = '';
+  componentDidMount() {
+    const url = 'https://api.example.com/data'; // Replace with your URL
 
-    externalRes.on('data', (chunk) => {
-      data += chunk;
-    });
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => this.setState({ data }))
+      .catch(error => this.setState({ error }));
+  }
 
-    externalRes.on('end', () => {
-      res.send(data);
-    });
-  }).on('error', (err) => {
-    console.error('Error fetching data:', err);
-    res.status(500).send('Error fetching data');
-  });
-});
+  render() {
+    const { data, error } = this.state;
 
-// Serve the React app for all other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+    if (error) {
+      return <div>Error: {error.message}</div>;
+    }
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+    if (!data) {
+      return <div>Loading...</div>;
+    }
+
+    return (
+      <div>
+        <h1>Data from URL:</h1>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      </div>
+    );
+  }
+}
+
+export default FetchData;
