@@ -1,52 +1,47 @@
-const express = require('express');
-const https = require('https');
 const http = require('http');
+const https = require('https');
 const url = require('url');
-const path = require('path');
-const cors = require('cors');
 
-const app = express();
-const port = process.env.PORT || 3001;
+// Create the server
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true);
 
-// Enable CORS if needed
-app.use(cors());
+  if (parsedUrl.pathname === '/fetch' && req.method === 'GET') {
+    const fetchUrl = parsedUrl.query.url;
 
-// Serve static files from the React app (build directory)
-app.use(express.static(path.join(__dirname, 'build')));
+    if (!fetchUrl) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('URL query parameter is required');
+      return;
+    }
 
-// API route to fetch data from a URL
-app.get('/fetch', (req, res) => {
-  console.log('Fetch request received with URL:', req.query.url);
-  const fetchUrl = req.query.url;
+    const client = fetchUrl.startsWith('https') ? https : http;
 
-  if (!fetchUrl) {
-    res.status(400).send('URL query parameter is required');
-    return;
+    client.get(fetchUrl, (externalRes) => {
+      let data = '';
+
+      externalRes.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      externalRes.on('end', () => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(data);
+      });
+
+    }).on('error', (err) => {
+      console.error('Error fetching data:', err);
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Error fetching data');
+    });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not Found');
   }
-
-  const client = fetchUrl.startsWith('https') ? https : http;
-  
-  client.get(fetchUrl, (externalRes) => {
-    let data = '';
-
-    externalRes.on('data', (chunk) => {
-      data += chunk;
-    });
-
-    externalRes.on('end', () => {
-      res.send(data);
-    });
-  }).on('error', (err) => {
-    console.error('Error fetching data:', err);
-    res.status(500).send('Error fetching data');
-  });
 });
 
-// Serve the React app for all other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-app.listen(port, () => {
+// Define the port
+const port = process.env.PORT || 3001;
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
