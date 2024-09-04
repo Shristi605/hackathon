@@ -1,8 +1,119 @@
-<div style="position: relative;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agile Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .input-with-toggle {
+      position: relative;
+    }
+    .toggle-visibility {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .checkbox-container input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 20px;
+    }
+    a {
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Python Flask API URL Data Fetch</h1>
+    <form id="url-form">
+      <label for="token">Enter Access Token</label>
+      <div class="input-with-toggle">
         <input type="password" id="token" name="token" required>
         <span class="toggle-visibility" onclick="togglePasswordVisibility()">👁️</span>
       </div>
 
-      <div id="result"></div>
+      <label for="pod_url">Enter Pod URL</label>
+      <input type="text" id="pod_url" name="pod_url" required>
+
+      <div class="checkbox-container">
+        <input type="checkbox" id="upcoming" name="upcoming">
+        <label for="upcoming">Upcoming</label>
+      </div>
+
+      <button type="submit">Fetch</button>
+    </form>
+
+    <div id="result"></div>
     <a href="https://example.com" target="_blank">Go to Example Page</a>
   </div>
+
+  <script>
+    function togglePasswordVisibility() {
+      const tokenField = document.getElementById('token');
+      const type = tokenField.type === 'password' ? 'text' : 'password';
+      tokenField.type = type;
+    }
+
+    document.getElementById('url-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // Get the values from the input fields
+      const token = document.getElementById('token').value;
+      const podUrl = document.getElementById('pod_url').value;
+      const isUpcomingChecked = document.getElementById('upcoming').checked;
+
+      // Get the base URL
+      const baseURL = "https://cirruspl-app-hackathon24-agilebot-python-dev-neu.azurewebsites.net/get_suggestions/iteration?";
+
+      // Construct the URL
+      let urlInput = `${baseURL}PERSONAL_ACCESS_TOKEN=${encodeURIComponent(token)}&POD_URL=${encodeURIComponent(podUrl)}`;
+
+      // Add the FUTURE_SCOPE parameter if the checkbox is checked
+      if (isUpcomingChecked) {
+        urlInput += "&FUTURE_SCOPE=upcoming";
+      }
+
+      // Fetch the content of the URL
+      try {
+        const response = await fetch(`/fetch?url=${encodeURIComponent(urlInput)}`);
+        const text = await response.text();
+        // Display the content
+        document.getElementById('result').innerHTML = text;
+      } catch (error) {
+        console.error('Error fetching URL:', error);
+        document.getElementById('result').innerText = 'Error fetching URL';
+      }
+    });
+  </script>
+</body>
+</html>
