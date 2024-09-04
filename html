@@ -47,6 +47,17 @@
     button {
       padding: 10px 20px;
     }
+    .progress-bar {
+      width: 100%;
+      background-color: #f3f3f3;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .progress-bar div {
+      height: 20px;
+      width: 0;
+      background-color: #4caf50;
+    }
     a {
       font-size: 0.9em;
     }
@@ -73,6 +84,10 @@
       <button type="submit">Fetch</button>
     </form>
 
+    <div class="progress-bar" id="progress-bar">
+      <div></div>
+    </div>
+
     <div id="result"></div>
     <a href="https://example.com" target="_blank">Go to Example Page</a>
   </div>
@@ -84,8 +99,30 @@
       tokenField.type = type;
     }
 
+    function showProgressBar() {
+      const progressBar = document.getElementById('progress-bar');
+      const progress = progressBar.querySelector('div');
+      progressBar.style.display = 'block';
+      let width = 0;
+      const interval = setInterval(() => {
+        if (width >= 100) {
+          clearInterval(interval);
+        } else {
+          width += 10;
+          progress.style.width = width + '%';
+        }
+      }, 100);
+    }
+
+    function hideProgressBar() {
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.display = 'none';
+      progressBar.querySelector('div').style.width = '0%';
+    }
+
     document.getElementById('url-form').addEventListener('submit', async (event) => {
       event.preventDefault();
+      showProgressBar();
 
       // Get the values from the input fields
       const token = document.getElementById('token').value;
@@ -103,15 +140,27 @@
         urlInput += "&FUTURE_SCOPE=upcoming";
       }
 
+      // Log the constructed URL to the console
+      console.log('Constructed URL:', urlInput);
+
       // Fetch the content of the URL
       try {
         const response = await fetch(`/fetch?url=${encodeURIComponent(urlInput)}`);
         const text = await response.text();
+
+        // Hide the progress bar
+        hideProgressBar();
+
         // Display the content
-        document.getElementById('result').innerHTML = text;
+        if (text.trim() === "") {
+          document.getElementById('result').innerText = 'No Issue found';
+        } else {
+          document.getElementById('result').innerHTML = text;
+        }
       } catch (error) {
         console.error('Error fetching URL:', error);
         document.getElementById('result').innerText = 'Error fetching URL';
+        hideProgressBar();
       }
     });
   </script>
